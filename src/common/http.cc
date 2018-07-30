@@ -322,8 +322,12 @@ namespace Private {
     State
     BodyStep::apply(StreamCursor& cursor) {
         if (message->body_.empty()) {
-            /* If this is the first time we are reading the body, skip the CRLF */
-            if (!cursor.advance(2)) return State::Again;
+           /* If this is the first time we are reading a body content, skip the CRLF 
+              Do not skip the CRLF is body is empty as message->body_ will remain empty
+              and we will skip it once more next time */
+           if (cursor.remaining() < 3) 
+               return Sate::Again;
+           cursor.advance(2);
         }
 
         auto cl = message->headers_.tryGet<Header::ContentLength>();
